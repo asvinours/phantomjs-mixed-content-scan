@@ -5,9 +5,28 @@ var system = require('system'),
     webpage = require('webpage');
 
 var args = system.args,
-    URLs = [];
+    URLs = [],
+    userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+    catchUserAgentOnNextLoop = false;
 
 args.slice(1).forEach(function(url) {
+
+    if (url.substr(0, 2) === '--' && url.substr(2) === 'useragent') {
+        catchUserAgentOnNextLoop = true;
+        return;
+    }
+
+    if (catchUserAgentOnNextLoop === true) {
+        userAgent = url;
+        console.log('New UserAgent: ' + userAgent);
+        catchUserAgentOnNextLoop = false;
+        return;
+    }
+
+    if (url.substr(0, 4) !== 'http') {
+        return;
+    }
+
     if (url.substr(0, 8) !== 'https://') {
         console.debug('Rewriting HTTP URL to use HTTPS:', url);
         url = url.replace('http:', 'https:');
@@ -17,7 +36,7 @@ args.slice(1).forEach(function(url) {
 });
 
 if (URLs.length < 1) {
-    console.log('Usage:', args[0], 'URL [URL2]');
+    console.log('Usage:', args[0], 'URL (https?://...) [URL2]');
     phantom.exit(1);
 }
 
@@ -28,15 +47,12 @@ function initPage() {
         var originalURL = currentURL = requestData.url;
 
         var currentPageURL = page.url || page.originalURL;
-
-        if (originalURL.match(/^http:\/\/cdn\.loc\.gov/)) {
-            currentURL = originalURL.replace('http://cdn.loc.gov', 'https://cdn.loc.gov');
-            console.log('🔸 ', currentPageURL, 'rewrote insecure CDN resource to:', currentURL);
-            networkRequest.changeUrl(newURL);
+        if (currentURL.substr(0, 7) === 'http://' && currentURL.replace(/https?/, '').replace(/\/$/, '') === currentPageURL.replace(/https?/, '').replace(/\/$/, '')) {
+            console.log('Main URL got redirected to insecure protocol');
         }
 
-        if (currentURL.substr(0, 8) !== 'https://' && currentURL.substr(0, 5) !== 'data:') {
-            console.log('❗️ ', currentPageURL, 'loaded an insecure resource:', originalURL);
+        if (currentURL.substr(0, 8) !== 'https://' && page.url.substr(0, 8) === 'https://' && currentURL.substr(0, 5) !== 'data:') {
+            console.log('❗️ ', currentPageURL, 'laded an insecure resource:', originalURL);
         }
     };
 
@@ -73,6 +89,7 @@ function crawlNextPage() {
 
     console.log('Opening', url, '(' + URLs.length + ' remaining)');
 
+    page.settings.userAgent = userAgent;
     page.onInitialized = function() {
         page.evaluate(function(startTime) {
             /* global window */
@@ -107,7 +124,7 @@ function crawlNextPage() {
 
     page.open(url, function (status) {
         if (status === 'success') {
-            console.log('✅ ', url);
+            console.log('✅ ', page.url);
             // Do nothing at this point until the load event fires
         } else {
             console.log('❌ ', url);
