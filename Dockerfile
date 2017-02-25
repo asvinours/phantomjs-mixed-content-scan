@@ -8,11 +8,9 @@ USER root
 WORKDIR /
 
 RUN apt-get update \
-      && apt-get install -y --no-install-recommends \
-            git
+      && apt-get install -y --no-install-recommends git
 
 RUN git clone https://github.com/asvinours/phantomjs-mixed-content-scan.git /opt/mixed-content-scanner/ \
 	&& ln -s /opt/mixed-content-scanner/report-mixed-content.js /scanner.js
-
 
 USER phantomjs
