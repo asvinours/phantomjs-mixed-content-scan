@@ -2,16 +2,69 @@
 
 This is a simple script which loads HTTPS pages and reports any resources which are loaded insecurely and are thus likely to be blocked by modern browsers.
 
-Note that it does not include a spider – you may use a tool like [LinkChecker](https://wummel.github.io/linkchecker/) to generate a big list or something like [extract-urls](https://github.com/acdha/unix_tools/blob/master/bin/extract-urls) to load a list from a page:
-
-    http loc.gov | extract-urls | grep -F .gov | cut -f1 -d"'" | grep -vF cdn.loc.gov | grep -vE '/(images|js|javascript|stylesheets|css|foresee)/' | grep -vE '[.](js|css)$' | perl -pe 's|^(?!http://)|http://|' | sort -ifu | xargs ./report-mixed-content.js
 
 ## Requirements
 
-* PhantomJS 2.0
+* Docker
 
 ## Usage
 
+- Clone this project
+- Build the docker container
+```bash
+$ docker build -it --rm -t my-mixed-content-scanner
 ```
-./report-mixed-content.js https://www.example.org/page1 https://www.example.org/page2 …
+- Run the container with the options you want
+```bash
+docker run --rm -it my-mixed-content-scanner phantomjs scanner.js  https://www.example.com/ https://www.example2.com/ ...
+```
+
+## Options
+
+1. --mobile, --tablet, --pc
+Use this option to force a user-agent when parsing the website
+
+2. --useragent
+Use this option if you need to specify a specific user agent
+```bash
+docker run --rm -it my-mixed-content-scanner phantomjs scanner.js --useragent "Mozilla/5.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12A366 Safari/600.1.4" https://www.example.com/embed/
+```
+
+3. --verbose
+If you need to maximise the output
+
+4. --crawl
+If you want to parse an entire site instead of just a few pages.
+If you use this option please only run this script on your own site.
+
+## Example output
+
+```bash
+$ docker run --rm -it my-mixed-content-scanner phantomjs scanner.js --useragent "Mozilla/5.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12A366 Safari/600.1.4" https://www.youporn.com/embed/
+❕  https://www.youporn.com/embed/ displayed insecure content from http://cdn4f.image.youporn.phncdn.com/m=eKw7Kgaaaa/m=eKw7Ke/201311/26/9042887/original/8/aus-dem-group-vintage-8.jpg.
+❕  https://www.youporn.com/embed/ displayed insecure content from http://cdn5f.image.youporn.phncdn.com/m=eKw7Kgaaaa/m=eKw7Ke/201609/09/13040717/original/8/blondie-vibes-her-hot-pussy-8.jpg.
+❕  https://www.youporn.com/embed/ displayed insecure content from http://cdn4f.image.youporn.phncdn.com/m=eKw7Kgaaaa/m=eKw7Ke/201512/11/12322857/original/8/beautiful-webcam-girl-8.jpg.
+❕  https://www.youporn.com/embed/ displayed insecure content from http://cdn5f.image.youporn.phncdn.com/m=eKw7Kgaaaa/m=eKw7Ke/201507/27/11700671/original/8/she-loves-my-cum-8.jpg.
+❕  https://www.youporn.com/embed/ displayed insecure content from http://cdn5f.image.youporn.phncdn.com/m=eKw7Kgaaaa/m=eKw7Ke/201602/29/12524405/original/8/cutie-likes-to-be-choked-during-sex-8.jpg.
+❕  https://www.youporn.com/embed/ displayed insecure content from http://cdn5f.image.youporn.phncdn.com/m=eKw7Kgaaaa/m=eKw7Ke/201510/03/12057071/original/8/hot-nipples-8.jpg.
+✅  https://www.youporn.com/embed/
+```
+
+```bash
+$ docker run --rm -v $(pwd):/opt/mixed-content-scanner/ -it mixed-content-scanner phantomjs scanner.js --crawl --verbose https://www.baumannfabrice.com/
+Opening https://www.baumannfabrice.com/ (0 remaining)
+	💻DOMContentLoaded 0.017s
+	💻load 0.050s
+✅  https://baumannfabrice.com/
+Opening https://www.baumannfabrice.com/project (1 remaining)
+	💻DOMContentLoaded 0.006s
+	💻load 0.014s
+✅  https://baumannfabrice.com/project/
+Opening https://www.baumannfabrice.com/vitae (6 remaining)
+	💻DOMContentLoaded 0.007s
+	💻load 0.022s
+✅  https://baumannfabrice.com/vitae/
+Opening https://www.baumannfabrice.com/project/patrouille_de_france_et_equipe_de_voltige_de_l_armee_de_l_air (5 remaining)
+	💻DOMContentLoaded 0.006s
+	💻load 0.040s
 ```

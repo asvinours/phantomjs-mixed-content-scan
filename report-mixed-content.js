@@ -58,7 +58,6 @@ args.slice(1).forEach(function(option) {
 
     startUrl = option;
     urlsToBrowse.push(option);
-    return;
 });
 
 if (urlsToBrowse.length < 1) {
