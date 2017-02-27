@@ -21,19 +21,19 @@ docker run --rm -it my-mixed-content-scanner phantomjs scanner.js  https://www.e
 
 ## Options
 
-1. --mobile, --tablet, --pc
+- --mobile, --tablet, --pc
 Use this option to force a user-agent when parsing the website
 
-2. --useragent
+- --useragent
 Use this option if you need to specify a specific user agent
 ```bash
 docker run --rm -it my-mixed-content-scanner phantomjs scanner.js --useragent "Mozilla/5.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12A366 Safari/600.1.4" https://www.example.com/embed/
 ```
 
-3. --verbose
+- --verbose
 If you need to maximise the output
 
-4. --crawl
+- --crawl
 If you want to parse an entire site instead of just a few pages.
 If you use this option please only run this script on your own site.
 
