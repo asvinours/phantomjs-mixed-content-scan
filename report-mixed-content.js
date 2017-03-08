@@ -5,21 +5,21 @@ var system = require('system'),
     webpage = require('webpage');
 
 var args = system.args,
-    userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+    userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36 mixed-content',
     catchUserAgentOnNextLoop = false,
     enableCrawler = false,
     verboseFlag = false,
+    disableCookies = false,
     startUrl = false,
     uniqUrls = [],
     urlsToBrowse = [],
     browsedUrls = [];
 
 var userAgents = {
-    pc: 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-    mobile: 'Mozilla/5.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12A366 Safari/600.1.4',
-    tablet: 'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 10 Build/LMY49F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.83 Safari/537.36'
+    pc: 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36 mixed-content',
+    mobile: 'Mozilla/5.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12A366 Safari/600.1.4 mixed-content',
+    tablet: 'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 10 Build/LMY49F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.83 Safari/537.36 mixed-content'
 };
-
 
 args.slice(1).forEach(function(option) {
 
@@ -37,6 +37,8 @@ args.slice(1).forEach(function(option) {
             enableCrawler = true;
         } else if (optionLabel === 'verbose') {
             verboseFlag = true;
+        } else if (optionLabel === 'disable-cookies') {
+            disableCookies = true;
         }
         return;
     }
@@ -59,6 +61,9 @@ args.slice(1).forEach(function(option) {
     startUrl = option;
     urlsToBrowse.push(option);
 });
+
+// In case we want to disable the cookies
+phantom.cookiesEnabled = !disableCookies;
 
 if (urlsToBrowse.length < 1) {
     console.log('Usage: ', args[0], ' [options] URL (https?://...)');
